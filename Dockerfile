@@ -37,7 +37,7 @@ WORKDIR /dogecoin
 
 COPY . /dogecoin
 
-RUN cd src/mcl && mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=Release .. && make -j$(nproc) install
+RUN cd src/mcl && mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=Debug .. && make -j$(nproc) install
 
 RUN apt update -y && apt install -y libdb5.3++-dev
 
