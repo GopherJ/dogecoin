@@ -1,6 +1,6 @@
 #ifndef BITCOIN_CRYPTO_GROTH16_H
 #define BITCOIN_CRYPTO_GROTH16_H
-#include "mcl/bn_c384_256.h"
+#include <mcl/bn_c384_256.h>
 #include <vector>
 
 

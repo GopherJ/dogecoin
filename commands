@@ -1,0 +1,6 @@
+./configure CC=clang CXX=clang++ CPPFLAGS=-Isrc/mcl/include LDFLAGS=-L/usr/local/lib
+
+docker build \
+  -c 512 \
+  -t qedprotocol/dogecoin:latest \
+  -f Dockerfile .
