@@ -2,6 +2,7 @@
 #define BITCOIN_CRYPTO_GROTH16_H
 #include <mcl/bn_c384_256.h>
 #include <vector>
+#include <iostream>
 
 
 #define G16_FP_SIZE_BYTES 48
@@ -56,7 +57,9 @@ public:
     mclBnFr public_inputs[2];
     CGROTH16()
     {
+              std::cout << "6.1" << std::endl;
         mclBn_init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+              std::cout << "6.9" << std::endl;
     };
 
     int DeserializeVerifierData(const char *data, size_t length);

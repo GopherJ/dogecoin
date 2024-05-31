@@ -14,6 +14,7 @@
 #include "script/script.h"
 #include "uint256.h"
 #include <mcl/bn_c384_256.h>
+#include <iostream>
 
 using namespace std;
 
@@ -104,7 +105,7 @@ bool static IsCompressedPubKey(const valtype &vchPubKey) {
  * Where R and S are not negative (their first byte has its highest bit not set), and not
  * excessively padded (do not start with a 0 byte, unless an otherwise negative number follows,
  * in which case a single 0 byte is necessary and even required).
- * 
+ *
  * See https://bitcointalk.org/index.php?topic=8392.msg127623#msg127623
  *
  * This function is consensus-critical since BIP66.
@@ -144,7 +145,7 @@ bool static IsValidSignatureEncoding(const std::vector<unsigned char> &sig) {
     // Verify that the length of the signature matches the sum of the length
     // of the elements.
     if ((size_t)(lenR + lenS + 7) != sig.size()) return false;
- 
+
     // Check whether the R element is an integer.
     if (sig[2] != 0x02) return false;
 
@@ -870,7 +871,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     popstack(stack);
                     stack.push_back(vchHash);
                 }
-                break;                                   
+                break;
 
                 case OP_CODESEPARATOR:
                 {
@@ -1033,6 +1034,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 
                     CScriptNum mode(stacktop(-1), fRequireMinimal);
                     size_t upperStackOffset = 0;
+              std::cout << "mode: " << mode.getint() << std::endl;
                     if(mode.getint() == 1){
 
                         // tx_hash mode has no public_input_1
@@ -1044,7 +1046,8 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         // todo: implement mode 2 and 3
                         return set_error(serror, SCRIPT_ERR_SIG_DER);
                     }
-                    
+
+              std::cout << "1" << std::endl;
                     valtype& verfierDataF = stacktop(-2);
                     valtype& verfierDataE = stacktop(-3);
                     valtype& verfierDataD = stacktop(-4);
@@ -1052,7 +1055,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     valtype& verfierDataB = stacktop(-6);
                     valtype& verfierDataA = stacktop(-7);
 
-                    
+
                     // Subset of script starting at the most recent codeseparator
                     //CScript scriptCode(pbegincodehash, pend);
 
@@ -1066,20 +1069,24 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         scriptCode.FindAndDelete(CScript(vchSig));
                     }
                     */
+              std::cout << "2" << std::endl;
                     valtype publicInput1(32); //tx
                     if(mode.getint()==1){
+              std::cout << "3" << std::endl;
                         CScript scriptCode(pbegincodehash, pend);
                         uint256 txHash;
                         if(!checker.GetSigHash(SIGHASH_ALL, scriptCode, sigversion, &txHash)){
                             return set_error(serror, SCRIPT_ERR_SIG_NULLFAIL);
                         }
+              std::cout << "4, sighash:" << txHash.GetHex() << std::endl;
                         publicInput1.assign(txHash.begin(), txHash.end());
                         // truncate the last byte so it fits in Fr
-                        publicInput1[31] = 0; 
+                        publicInput1[31] = 0;
                     }
 
 
 
+              std::cout << "5" << std::endl;
                     // cut off for witness, if mode is 1, then public_input_1 is the current tx_hash instead of a public input
                     valtype& public_input_1 = mode.getint()==1?publicInput1:stacktop(-8);
                     valtype& public_input_0 = stacktop(-9+upperStackOffset);
@@ -1087,9 +1094,11 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     valtype& piB1 = stacktop(-11+upperStackOffset);
                     valtype& piB0 = stacktop(-12+upperStackOffset);
                     valtype& piA = stacktop(-13+upperStackOffset);
-                    
 
+
+              std::cout << "6" << std::endl;
                     CGROTH16 groth16Verifier = CGROTH16();
+              std::cout << "7" << std::endl;
                    if(
                         !groth16Verifier.SetProofDataCompact(
                             &piA,
@@ -1103,6 +1112,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         // SCRIPT_ERR_WITNESS_PUBKEYTYPE -> makes sense?
                         return set_error(serror, SCRIPT_ERR_CHECKMULTISIGVERIFY);
                     }
+              std::cout << "8" << std::endl;
                    if(
                         !groth16Verifier.SetVerifierDataCompact(
                             &verfierDataA,
@@ -1116,9 +1126,10 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         // SCRIPT_ERR_WITNESS_PUBKEYTYPE -> makes sense?
                         return set_error(serror, SCRIPT_ERR_WITNESS_PUBKEYTYPE);
                     }
-                    
 
-                    
+
+              std::cout << "9" << std::endl;
+
                     bool fSuccess = groth16Verifier.Verify();
                     /*
                     // we don't modify the stack so as to be compatible with older versions
@@ -1130,11 +1141,12 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     }
                     stack.push_back(fSuccess ? vchTrue : vchFalse);
                     */
+              std::cout << "result:" << fSuccess << std::endl;
                    if(!fSuccess){
                        return set_error(serror, SCRIPT_ERR_CHECKSIGVERIFY);
                    }
 
-                    
+
                 }
                 break;
 
