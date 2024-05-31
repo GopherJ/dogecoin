@@ -1,4 +1,4 @@
 docker build \
   -c 512 \
-  -t qedprotocol/dogecoin:latest \
+  -t alexcj96/dogecoin:latest \
   -f Dockerfile .

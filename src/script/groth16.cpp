@@ -23,30 +23,44 @@ int deserialize_groth16_vk(Groth16VerifierKeyInput *vk, const char *data, size_t
         return 0;
     const char *ptr = data;
     size_t tmp = mclBnG1_deserialize(&vk->alpha, ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.1, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->k[0], ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.2, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->k[1], ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.3, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->k[2], ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.4, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->beta, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "8.5, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->delta, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "8.6, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->gamma, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "8.7, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
@@ -120,22 +134,32 @@ int deserialize_groth16_proof(Groth16ProofInput *vk, mclBnFr *publicInputs, cons
         return 0;
     const char *ptr = data;
     size_t tmp = mclBnG1_deserialize(&vk->pi_1, ptr, G16_FP_SIZE_BYTES);
+    std::cout << "7.1, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->pi_2, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "7.2, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->pi_3, ptr, G16_FP_SIZE_BYTES);
+    std::cout << "7.3, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnFr_deserialize(&publicInputs[0], ptr, G16_FR_SIZE_BYTES);
+    std::cout << "7.4, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FR_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnFr_deserialize(&publicInputs[1], ptr, G16_FR_SIZE_BYTES);
+    std::cout << "7.5, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FR_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
