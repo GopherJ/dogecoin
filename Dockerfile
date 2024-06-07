@@ -26,7 +26,7 @@ RUN apt update -y \
     libboost-program-options-dev \
     libboost-test-dev \
     libboost-thread-dev \
-    libgmp-dev \
+    libdb5.3++-dev \
     clang-15 \
   && update-alternatives --install /usr/bin/clang clang /usr/bin/clang-15 1 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-15
 
@@ -37,11 +37,22 @@ WORKDIR /dogecoin
 
 COPY . /dogecoin
 
-RUN cd src/mcl && mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=Debug .. && make -j$(nproc) install
+RUN cd src/mcl && mkdir build && cd build \
+  && cmake \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DMCL_TEST_WITH_GMP=OFF \
+    .. \
+  && make -j$(nproc) install
 
-RUN apt update -y && apt install -y libdb5.3++-dev
-
-RUN ./autogen.sh && ./configure CC=clang CXX=clang++ CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib --disable-tests --disable-gui-tests && make -j$(nproc) install
+RUN ./autogen.sh \
+  && ./configure \
+    CC=clang \
+    CXX=clang++ \
+    CPPFLAGS=-I/usr/local/include \
+    LDFLAGS=-L/usr/local/lib \
+    --disable-tests \
+    --disable-gui-tests \
+  && make -j$(nproc) install
 
 RUN echo '#!/bin/bash\n/usr/local/bin/dogecoind $@' > /dogecoin/.entrypoint.sh
 RUN chmod u+x /dogecoin/.entrypoint.sh
