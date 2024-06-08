@@ -1,47 +1,38 @@
-BIT=64
 ACLOCAL_AMFLAGS = -I build-aux/m4
 
-AM_CXXFLAGS = -std=c++03 -I$(top_srcdir)/include -I$(top_srcdir)/src $(MCL_CFLAGS)
+AM_CXXFLAGS = -std=c++03 -fpic -g3 -I$(top_srcdir)/include/mcl -I$(top_srcdir)/src $(CFLAGS)
+
+AM_CFLAGS = -std=c++03 -fpic -g3 -I$(top_srcdir)/include/mcl -I$(top_srcdir)/src $(CFLAGS)
+
+libdir = $(prefix)/lib
 
 lib_LTLIBRARIES = libmcl.la
-include_HEADERS = include/mcl/bn.h include/mcl/bn_c384_256.h include/mcl/config.h include/mcl/curve_type.h include/mcl/fp.h include/mcl/bint.hpp src/bint_impl.hpp include/cybozu/bit_operation.hpp include/cybozu/exception.hpp include/cybozu/hash.hpp include/cybozu/itoa.hpp include/cybozu/mutex.hpp include/cybozu/random_generator.hpp include/cybozu/serializer.hpp include/cybozu/stream.hpp 
-nodist_libmcl_la_OBJECTS = src/libmcl_la-fp.lo \
-	src/libmcl_la-bn_c384_256.lo src/bint.lo src/base.lo 
-nodist_libmcl_la_SOURCES = src/fp.cpp src/bn_c384_256.cpp
-# $(OBJ_DIR)/bint.lo $(OBJ_DIR)/base.lo
-#libmcl_la_LIBADD = -lgmp -lgmpxx
-libmcl_la_LDFLAGS = -no-undefined -version-info $(LIB_VERSION_CURRENT):$(LIB_VERSION_REVISION):$(LIB_VERSION_AGE)
-libmcl_la_CPPFLAGS = -I$(top_srcdir)/include $(MCL_CFLAGS)
-libmcl_la_LIBADD = $(MCL_LIBS)
+
+include_HEADERS = include/mcl/bint_proto.hpp src/bint_switch.hpp src/llvm_proto.hpp include/mcl/bn.h include/mcl/impl/bn_c_impl.hpp
+
+libmcl_la_SOURCES = src/fp.cpp src/bn_c384_256.cpp
+libmcl_la_CPPFLAGS = -std=c++03 -fpic -g3 -I$(top_srcdir)/include/mcl -I$(top_srcdir)/src $(CFLAGS)
+libmcl_la_LDFLAGS = -version-info 1:74:0 @LDFLAGS@
+
+noinst_DATA = src/bint$(BIT).lo src/base$(BIT).lo
+libmcl_la_LIBADD = $(noinst_DATA)
 
 mclincludedir = $(includedir)/mcl
 mclinclude_HEADERS = $(mcl_headers)
 
-
-TESTS =
-#if USE_TESTS
-#TESTS += test/fp_test test/bn_c384_256_test
-#check_PROGRAMS = $(TESTS) 
-#test_fp_test_SOURCES = test/fp_test.cpp
-#test_fp_test_LDADD = libmcl.la
-#test_bn_c384_256_test_SOURCES = test/bn_c384_256_test.cpp  
-#test_bn_c384_256_test_LDADD = libmcl.la
-#endif
-
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libmcl.pc
 
-EXTRA_DIST = CHANGELOG.md COPYING readme.md
+include/mcl/bint_proto.hpp: src/gen_bint_header.py
+	python3 $< > $@ proto -max_bit $(MCL_MAX_BIT_SIZE)
+src/bint_switch.hpp: src/gen_bint_header.py
+	python3 $< > $@ switch -max_bit $(MCL_MAX_BIT_SIZE)
+src/llvm_proto.hpp: src/gen_llvm_proto.py
+	python3 $< > $@
 
+src/bint64.lo: src/asm/bint-x64-amd64.S
+		$(LIBTOOL) --mode=compile $(CC) -c $< -o $@ $(CFLAGS)
 
-src/bint.lo: src/bint$(BIT).ll
-	$(LIBTOOL) --tag=CC --mode=compile clang++ -c $< -o $@ $(CFLAGS)
+src/base64.lo: src/asm/x86-64.S
+		$(LIBTOOL) --mode=compile $(CC) -c $< -o $@ $(CFLAGS)
 
-src/base.lo: src/base$(BIT).ll
-	$(LIBTOOL) --tag=CC --mode=compile clang++ -c $< -o $@ $(CFLAGS)
-
-#bint.lo: src/bint$(BIT).ll
-#	$(LIBTOOL) --mode=compile $(CXX) -c $< -o $@ $(CFLAGS)
-
-#base.lo: src/base$(BIT).ll
-#	$(LIBTOOL) --mode=compile $(CXX) -c $< -o $@ $(CFLAGS)

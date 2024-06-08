@@ -1,26 +1,21 @@
 #include "groth16.h"
 #include <string.h>
 #include <vector>
-/*
+#include <mcl/bn_c384_256.h>
 #include <stdio.h>
 #include <string>
 #include <list>
 #include <iostream>
 #include <utility>
-*/
-
-bool CGROTH16::library_initialized = false;
 
 void printHexChar(const char *prefix, const char *v, size_t size, const char *suffix)
 {
-    /*
     printf("%s", prefix);
     for (size_t i = 0; i < size; i++)
     {
         printf("%02x", (unsigned char)(v[i]));
     }
     printf("%s", suffix);
-    */
 }
 int deserialize_groth16_vk(Groth16VerifierKeyInput *vk, const char *data, size_t length)
 {
@@ -28,30 +23,44 @@ int deserialize_groth16_vk(Groth16VerifierKeyInput *vk, const char *data, size_t
         return 0;
     const char *ptr = data;
     size_t tmp = mclBnG1_deserialize(&vk->alpha, ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.1, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->k[0], ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.2, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->k[1], ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.3, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->k[2], ptr, G16_FP_SIZE_BYTES);
+    std::cout << "8.4, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->beta, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "8.5, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->delta, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "8.6, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->gamma, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "8.7, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
@@ -125,22 +134,32 @@ int deserialize_groth16_proof(Groth16ProofInput *vk, mclBnFr *publicInputs, cons
         return 0;
     const char *ptr = data;
     size_t tmp = mclBnG1_deserialize(&vk->pi_1, ptr, G16_FP_SIZE_BYTES);
+    std::cout << "7.1, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG2_deserialize(&vk->pi_2, ptr, G16_FP_SIZE_BYTES * 2);
+    std::cout << "7.2, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES * 2, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnG1_deserialize(&vk->pi_3, ptr, G16_FP_SIZE_BYTES);
+    std::cout << "7.3, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FP_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnFr_deserialize(&publicInputs[0], ptr, G16_FR_SIZE_BYTES);
+    std::cout << "7.4, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FR_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
     tmp = mclBnFr_deserialize(&publicInputs[1], ptr, G16_FR_SIZE_BYTES);
+    std::cout << "7.5, tmp: " << tmp << std::endl;
+    printHexChar("value:", ptr, G16_FR_SIZE_BYTES, "\n");
     if (tmp == 0)
         return 0;
     ptr += tmp;
@@ -212,8 +231,11 @@ int verify_groth16_proof(
     const Groth16ProofInput *proof,
     const mclBnFr *publicInputs)
 {
+    std::cout << "9.1" << std::endl;
     Groth16VerifierKeyPrecomputedValues vkPrecomputed;
+    std::cout << "9.2" << std::endl;
     precompute_groth16_values(vk, &vkPrecomputed);
+    std::cout << "9.3" << std::endl;
     return verify_groth16_proof_precomputed(vk, &vkPrecomputed, proof, publicInputs);
 }
 
@@ -226,7 +248,7 @@ bool CGROTH16::Verify()
     serialize_groth16_vk(&vk, data);
     printHexChar("verifier_data_hex_v: [", data, 480, "]\n");
     int result = verify_groth16_proof(&vk, &proof, public_inputs);
-    
+
     return result == 1;
 }
 
@@ -248,8 +270,8 @@ int CGROTH16::SetVerifierDataCompact(
     const std::vector<unsigned char> *e,
     const std::vector<unsigned char> *f
 ){
-    //printf("hi vdata\n");
-    //printf("got sizes: a->size(): %lu, b->size(): %lu, c->size(): %lu, d->size(): %lu, e->size(): %lu, f->size(): %lu ",a->size() ,b->size() ,c->size() ,d->size() ,e->size() ,f->size());
+    printf("hi vdata\n");
+    printf("got sizes: a->size(): %lu, b->size(): %lu, c->size(): %lu, d->size(): %lu, e->size(): %lu, f->size(): %lu ",a->size() ,b->size() ,c->size() ,d->size() ,e->size() ,f->size());
 
     if(a->size() != 80 || b->size() != 80 || c->size() != 80 || d->size() != 80 || e->size() != 80 || f->size() != 80){
         return 0;
@@ -272,12 +294,12 @@ int CGROTH16::SetProofDataCompact(
     const std::vector<unsigned char> *public_input_0,
     const std::vector<unsigned char> *public_input_1
 ){
-    //printf("hi proof data\n");
-    //printf("size pi_a->size(): %lu pi_b_0->size(): %lu pi_b_1->size(): %lu pi_c->size(): %lu public_input_0->size(): %lu public_input_1->size(): %lu\n", pi_a->size(), pi_b_0->size(), pi_b_1->size(), pi_c->size(), public_input_0->size(),public_input_1->size());
+    printf("hi proof data\n");
+    printf("size pi_a->size(): %lu pi_b_0->size(): %lu pi_b_1->size(): %lu pi_c->size(): %lu public_input_0->size(): %lu public_input_1->size(): %lu\n", pi_a->size(), pi_b_0->size(), pi_b_1->size(), pi_c->size(), public_input_0->size(),public_input_1->size());
 
 
     if(pi_a->size() != G16_FP_SIZE_BYTES || pi_b_0->size() != G16_FP_SIZE_BYTES || pi_b_1->size() != G16_FP_SIZE_BYTES || pi_c->size() != G16_FP_SIZE_BYTES || public_input_0->size() != G16_FR_SIZE_BYTES || public_input_1->size() != G16_FR_SIZE_BYTES){
-        //printf("bad size pi_a->size(): %lu pi_b_0->size(): %lu pi_b_1->size(): %lu pi_c->size(): %lu public_input_0->size(): %lu public_input_1->size(): %lu\n", pi_a->size(), pi_b_0->size(), pi_b_1->size(), pi_c->size(), public_input_0->size(),public_input_1->size());
+        printf("bad size pi_a->size(): %lu pi_b_0->size(): %lu pi_b_1->size(): %lu pi_c->size(): %lu public_input_0->size(): %lu public_input_1->size(): %lu\n", pi_a->size(), pi_b_0->size(), pi_b_1->size(), pi_c->size(), public_input_0->size(),public_input_1->size());
         return 0;
     }
     char data[256] = {0};
@@ -289,5 +311,5 @@ int CGROTH16::SetProofDataCompact(
     memcpy(data + G16_FP_SIZE_BYTES*4+G16_FR_SIZE_BYTES, public_input_1->data(), G16_FR_SIZE_BYTES);
     printHexChar("proof_data_hex: ", data, 256, "\n");
     return DeserializeProofData(data, 256);
-    
+
 }

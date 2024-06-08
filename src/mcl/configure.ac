@@ -26,14 +26,91 @@ AM_INIT_AUTOMAKE([1.11.2 foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_LEX
+AC_CHECK_PROG([LLC], [llc], [llc])
 AM_PROG_AR
 
 LT_INIT([win32-dll])
 
-MCL_CFLAGS="-DMCL_SIZEOF_UNIT=8 -DMCL_MAX_BIT_SIZE=384 -Wall -Wextra -O3"
-AC_SUBST(MCL_CFLAGS)
+NASM_ELF_OPT=-felf64
+
+AC_CANONICAL_HOST
+case "$host_os" in
+    *mingw64*)
+        AC_DEFINE([MINGW64], [1], [Define to 1 if on MinGW-W64])
+        CFLAGS="$CFLAGS -D__USE_MINGW_ANSI_STDIO=1"
+        LDFLAGS="$LDFLAGS -lrt"
+        NASM_ELF_OPT="-fwin64"
+        ;;
+    *cygwin*)
+        AC_DEFINE([CYGWIN], [1], [Define if on Cygwin])
+        ;;
+    *darwin*)
+        AC_DEFINE([DARWIN], [1], [Define if on Darwin/Mac OS X])
+        NASM_ELF_OPT="-fmacho64"
+        LDFLAGS="$LDFLAGS -lrt"
+        ;;
+    *openbsd*)
+        AC_DEFINE([OPENBSD], [1], [Define if on OpenBSD])
+        CFLAGS="$CFLAGS -I/usr/local/include"
+        LDFLAGS="$LDFLAGS -lrt -L/usr/local/lib"
+        ;;
+    *freebsd*)
+        AC_DEFINE([FREEBSD], [1], [Define if on FreeBSD])
+        CFLAGS="$CFLAGS -I/usr/local/include"
+        LDFLAGS="$LDFLAGS -L/usr/local/lib"
+        ;;
+esac
+case "$host_cpu" in
+    x86_64)
+        AC_DEFINE([ARCH_X86_64], [1], [Define if on x86_64])
+        BIT=64
+        BIT_OPT=-m64
+        ;;
+    i386|i486|i586|i686)
+        AC_DEFINE([ARCH_X86], [1], [Define if on x86])
+        BIT=32
+        BIT_OPT=-m32
+        ;;
+    arm*)
+        AC_DEFINE([ARCH_ARM], [1], [Define if on ARM])
+        BIT=32
+        ;;
+    aarch64)
+        AC_DEFINE([ARCH_AARCH64], [1], [Define if on AArch64])
+        BIT=64
+        ;;
+esac
+
+MCL_SIZEOF_UNIT=`expr $BIT / 8`
+MCL_MAX_BIT_SIZE=384
+
+CFLAGS_WARN="-Wall -Wextra -Wformat=2 -Wcast-qual -Wcast-align -Wwrite-strings -Wfloat-equal -Wpointer-arith -Wundef"
+MCL_CFLAGS="-DMCL_NO_AUTOLINK -DMCLBN_NO_AUTOLINK -DMCL_USE_LLVM=1 -DMCL_SIZEOF_UNIT=$MCL_SIZEOF_UNIT -DMCL_MAX_BIT_SIZE=$MCL_MAX_BIT_SIZE"
+CFLAGS="$CFLAGS $BIT_OPT $CFLAGS_WARN $MCL_CFLAGS -std=c++03 -fpic -g3 -I include -I src"
+LDFLAGS="$LDFLAGS $BIT_OPT"
+
+AC_SUBST(CFLAGS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(BIT)
+AC_SUBST(CXX)
+AC_SUBST(CC)
+AC_SUBST(MCL_MAX_BIT_SIZE)
 
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_FILES([Makefile libmcl.pc])
 
 AC_OUTPUT
+
+echo
+echo "  target os     = $TARGET_OS"
+echo "  build os      = $BUILD_OS"
+echo
+echo "  CC            = $CC"
+echo "  CFLAGS        = $CFLAGS"
+echo "  CPPFLAGS      = $CPPFLAGS"
+echo "  CXX           = $CXX"
+echo "  CXXFLAGS      = $CXXFLAGS"
+echo "  LDFLAGS       = $LDFLAGS"
+echo

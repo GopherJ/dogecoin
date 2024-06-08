@@ -1,8 +1,8 @@
 #ifndef BITCOIN_CRYPTO_GROTH16_H
 #define BITCOIN_CRYPTO_GROTH16_H
-#include "mcl/bn_c384_256.h"
+#include <mcl/bn_c384_256.h>
 #include <vector>
-
+#include <iostream>
 
 #define G16_FP_SIZE_BYTES 48
 #define G16_FR_SIZE_BYTES 32
@@ -49,7 +49,6 @@ int deserialize_groth16_proof(Groth16ProofInput *vk, mclBnFr *publicInputs, cons
 class CGROTH16
 {
 private:
-    static bool library_initialized;
 public:
     Groth16ProofInput proof;
     Groth16VerifierKeyInput vk;
@@ -57,13 +56,18 @@ public:
     mclBnFr public_inputs[2];
     CGROTH16()
     {
-
-            mclBn_init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
-        /*
-        if(!CGROTH16::library_initialized){
-            CGROTH16::library_initialized = true;
-            mclBn_init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
-        }*/
+        std::cout << "6.1" << std::endl;
+        static bool initialized = false;
+        if (!initialized) {
+          std::cout << "initializing mcl bls12_381..." << std::endl;
+          int res = mclBn_init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+          if (res != 0) {
+            std::cout << "mclBn_init failed" << std::endl;
+            return;
+          }
+          initialized = true;
+        }
+        std::cout << "6.9" << std::endl;
     };
 
     int DeserializeVerifierData(const char *data, size_t length);
