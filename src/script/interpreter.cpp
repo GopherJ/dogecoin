@@ -13,6 +13,7 @@
 #include "pubkey.h"
 #include "script/script.h"
 #include "uint256.h"
+#include <iostream>
 
 #include <mcl/bn_c384_256.h>
 
@@ -1121,6 +1122,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 
                     
                     bool fSuccess = groth16Verifier.Verify();
+                    std::cout << "result: " << fSuccess << std::endl;
                     /*
                     // we don't modify the stack so as to be compatible with older versions
                     for(int i=0;i<12;i++){
