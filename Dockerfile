@@ -42,6 +42,8 @@ RUN ./autogen.sh \
   && ./configure \
     CC=clang \
     CXX=clang++ \
+    CPPFLAGS=-I/usr/local/include \
+    LDFLAGS=-L/usr/local/lib \
     --disable-dependency-tracking \
     --disable-tests \
     --disable-gui-tests \
