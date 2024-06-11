@@ -61,6 +61,11 @@ case "$host_os" in
         CFLAGS="$CFLAGS -I/usr/local/include"
         LDFLAGS="$LDFLAGS -L/usr/local/lib"
         ;;
+    *linux*)
+        AC_DEFINE([LINUX], [1], [Define if on Linux])
+        CFLAGS="$CFLAGS -I/usr/local/include"
+        LDFLAGS="$LDFLAGS -L/usr/local/lib"
+        ;;
 esac
 case "$host_cpu" in
     x86_64)
@@ -88,7 +93,7 @@ MCL_MAX_BIT_SIZE=384
 
 CFLAGS_WARN="-Wall -Wextra -Wformat=2 -Wcast-qual -Wcast-align -Wwrite-strings -Wfloat-equal -Wpointer-arith -Wundef"
 MCL_CFLAGS="-DMCL_NO_AUTOLINK -DMCLBN_NO_AUTOLINK -DMCL_USE_LLVM=1 -DMCL_SIZEOF_UNIT=$MCL_SIZEOF_UNIT -DMCL_MAX_BIT_SIZE=$MCL_MAX_BIT_SIZE"
-CFLAGS="$CFLAGS $BIT_OPT $CFLAGS_WARN $MCL_CFLAGS -std=c++03 -fpic -g3 -I include -I src"
+CFLAGS="$CFLAGS $BIT_OPT $CFLAGS_WARN $MCL_CFLAGS -I include -I src"
 LDFLAGS="$LDFLAGS $BIT_OPT"
 
 AC_SUBST(CFLAGS)
